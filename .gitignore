@@ -1,0 +1,4 @@
+00_genome/*
+01_testFastqs/*
+02_testBams/*
+03_testGvcfs/*
