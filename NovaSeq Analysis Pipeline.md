@@ -784,7 +784,13 @@ Do hard filtering with GATK as above - `wildFlies_all_filtered.vcf.gz` is the ne
 
 Computer mean depth and missingness per individual on a whole-genome scale. 
 
+![](images/image-20191016122723985.png)
 
+![](images/image-20191016122749808.png)
+
+![](images/image-20191016122902782.png)
+
+![](images/image-20191016152003678.png)
 
 _Flies with high depth (>2x) and high missingness (>0.25) are enriched for VA heritability flies, which were collected late August to late October. Similar patterns are not seen for the VA variability flies, which were collected July to August_. 
 
