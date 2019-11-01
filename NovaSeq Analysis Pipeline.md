@@ -738,14 +738,6 @@ Starting with 2L, lets first filter SNPs using GATKs `VariantFiltration` with "Q
 
 Let's calculate fraction of missing genotypes for each individual using vcftools. Some individuals will have very low coverage and lots of missing data! You can plot this using R:
 
-![image-20191009174807024](/Users/jamillaakhund-zade/Library/Application Support/typora-user-images/image-20191009174807024.png)
-
-![image-20191009174830799](/Users/jamillaakhund-zade/Library/Application Support/typora-user-images/image-20191009174830799.png)
-
-![image-20191009175039889](/Users/jamillaakhund-zade/Library/Application Support/typora-user-images/image-20191009175039889.png)
-
-
-
 Let's filter out individuals with < 2x mean coverage and create a new VCF file for chr2L keeping only SNPs where <u>all</u> individuals with >2x coverage have a genotype:
 
 ```
@@ -786,13 +778,7 @@ Do hard filtering with GATK as above - `wildFlies_all_filtered.vcf.gz` is the ne
 
 Computer mean depth and missingness per individual on a whole-genome scale. 
 
-![image-20191016122723985](/Users/jamillaakhund-zade/Library/Application Support/typora-user-images/image-20191016122723985.png)
 
-![image-20191016122749808](/Users/jamillaakhund-zade/Library/Application Support/typora-user-images/image-20191016122749808.png)
-
-![image-20191016122902782](/Users/jamillaakhund-zade/Library/Application Support/typora-user-images/image-20191016122902782.png)
-
-![image-20191016152003678](/Users/jamillaakhund-zade/Library/Application Support/typora-user-images/image-20191016152003678.png)
 
 _Flies with high depth (>2x) and high missingness (>0.25) are enriched for VA heritability flies, which were collected late August to late October. Similar patterns are not seen for the VA variability flies, which were collected July to August_. 
 
