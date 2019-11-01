@@ -738,6 +738,12 @@ Starting with 2L, lets first filter SNPs using GATKs `VariantFiltration` with "Q
 
 Let's calculate fraction of missing genotypes for each individual using vcftools. Some individuals will have very low coverage and lots of missing data! You can plot this using R:
 
+![](images/image-20191009174807024.png)
+
+![](images/image-20191009174830799.png)
+
+![](images/image-20191009175039889.png)
+
 Let's filter out individuals with < 2x mean coverage and create a new VCF file for chr2L keeping only SNPs where <u>all</u> individuals with >2x coverage have a genotype:
 
 ```
