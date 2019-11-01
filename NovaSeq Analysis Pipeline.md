@@ -16,25 +16,27 @@
 
 Make a directory on your local computer and go into it
 
-`mkdir NovaSeq`
-
-`cd NovaSeq`
+```
+mkdir NovaSeq
+cd NovaSeq
+```
 
 Download your data with `wget`:
 
-`wget -r -nH --cut-dirs=1 --no-parent -e robots=off  --no-check-certificate --reject="index.htm*" https://data.rc.fas.harvard.edu/ngsdata/190809_A00794_0068_AHFFLJDRXX`
+```
+wget -r -nH --cut-dirs=1 --no-parent -e robots=off  --no-check-certificate --reject="index.htm*" https://data.rc.fas.harvard.edu/ngsdata/190809_A00794_0068_AHFFLJDRXX
+```
 
 ##### *Better option:* Copy files to debivort_lab directory with your folder - lab has 4TB space!
 
 Log in to Research Computing using JAuth.jar for two-factor authentication
 
-`ssh jakhundzade@login.rc.fas.harvard.edu`
-
-`cd /n/debivort_lab/`
-
-`mkdir Jamilla_seq`
-
-`cd /n/debivort_lab/Jamilla_seq/`
+```
+ssh jakhundzade@login.rc.fas.harvard.edu
+cd /n/debivort_lab/
+mkdir Jamilla_seq
+cd /n/debivort_lab/Jamilla_seq/
+```
 
 Get the data via `rsync`:
 
@@ -52,15 +54,13 @@ I am using dmel-all-chromosome-r6.28.fasta. You can also download the annotation
 
 ##### Make genome folder and genome index in home directory on Odyssey
 
-`ssh jakhundzade@login.rc.fas.harvard.edu`
-
-`mkdir Seq-Data`
-
-`cd Seq-Data`
-
-`mkdir 00_genome`
-
-`cd Seq-Data/00_genome`
+```
+ssh jakhundzade@login.rc.fas.harvard.edu
+mkdir Seq-Data
+cd Seq-Data
+mkdir 00_genome
+cd Seq-Data/00_genome
+```
 
 ##### Load bwa software for alignment and indexing
 
@@ -82,9 +82,11 @@ You should log in via VPN to vpn.rc.fas.harvard.edu with your Odyssey account an
 
 > [SAMPLE_NAME]\_[UNIQ_FLYID]\_[SAMPLESHEET_INDEX]\_[LANE]\_[READ]\_001.fastq.gz
 
-`cd Seq-Data/
+```
+cd Seq-Data/
 mkdir 02_testBams
-mkdir 01_testFastqs`
+mkdir 01_testFastqs
+```
 
 Make path to lab directory holding the seq data
 
@@ -174,15 +176,13 @@ Switch into your folder on scratchlfs (or make one if you haven't already)
 
 Make directories in scratch and copy files into them
 
-`mkdir 00_genome`
-
-`cp ~/Seq-Data/00_genome/* 00_genome`
-
-`mkdir 01_fastqs`
-
-`rsync -va  /n/debivort_lab/Jamilla_seq/190809_A00794_0068_AHFFLJDRXX/Wild_Fly_Genetic_Diversity/ 01_fastqs`
-
-`mkdir 02_bams`
+```
+mkdir 00_genome
+cp ~/Seq-Data/00_genome/* 00_genome
+mkdir 01_fastqs
+rsync -va  /n/debivort_lab/Jamilla_seq/190809_A00794_0068_AHFFLJDRXX/Wild_Fly_Genetic_Diversity/ 01_fastqs
+mkdir 02_bams
+```
 
 Make a `tmp` folder to hold the standard error (`.err`) and standard out (`.out`) text files. Should clear it before running a new batch job array otherwise it will be full of files. Standard error and standard out are simply what is printed on the console in terms of errors and outs. You can check these files to see if any errors happened during your script run. 
 
@@ -194,15 +194,13 @@ You can check the FairShare score for you/lab using `sshare -U`. The higher it i
 
 Get the number of unique files in the 01_fastqs directory and zero-index them
 
-`FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/01_fastqs | sed 's/_R.*//' | uniq))`
-
-`NUMFASTQ=${#FILES[@]}`
-
-`ZBNUMFASTQ=$(($NUMFASTQ - 1))`
+```
+FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/01_fastqs | sed 's/_R.*//' | uniq))
+NUMFASTQ=${#FILES[@]}
+ZBNUMFASTQ=$(($NUMFASTQ - 1))
+```
 
 Make sure `echo $ZBNUMFASTQ` gives the number of unique sample/lane combos - 1. _There are 1092 .fastq files (273 samples x 2 lanes x 2 reads) from NovaSeq and you are submitting 546 jobs (273 samples x 2 lanes)._
-
-
 
 Submit the job array from `Jamilla` directory:
 
@@ -236,52 +234,33 @@ For those files where SAM to BAM conversion failed, you can run ValidateSamFile 
 
 You can try re-running the alignment the failed files to see whether the second round of alignment will fix the issues. To do this, you need to find those samples that failed and pull out their fastqs and copy them to a new directory. 
 
-`mkdir /n/scratchlfs/debivort_lab/Jamilla/01_fastqs/failed_samples`
-
-`ls -1 /n/scratchlfs/debivort_lab/Jamilla/01_fastqs > fastq_raw_file_list.txt
-`
-
-`grep -f allsam_files.txt test.txt | sed 's/[0-9]$/L00&/' | grep -f - fastq_raw_file_list.txt > fastqs_to_rerun.txt`
-
-`cd 01_fastqs`
-
-`xargs --arg-file=../02_bams/fastqs_to_rerun.txt cp --target-directory=/n/scratchlfs/debivort_lab/Jamilla/01_fastqs/failed_samples`
+```
+mkdir /n/scratchlfs/debivort_lab/Jamilla/01_fastqs/failed_samples
+ls -1 /n/scratchlfs/debivort_lab/Jamilla/01_fastqs > fastq_raw_file_list.txt
+grep -f allsam_files.txt test.txt | sed 's/[0-9]$/L00&/' | grep -f - fastq_raw_file_list.txt > fastqs_to_rerun.txt
+cd 01_fastqs
+xargs --arg-file=../02_bams/fastqs_to_rerun.txt cp --target-directory=/n/scratchlfs/debivort_lab/Jamilla/01_fastqs/failed_samples
+```
 
 Resubmit the batch job with just these files:
 
-`FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/01_fastqs/failed_samples | sed 's/_R.*//' | uniq))`
+```
+FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/01_fastqs/failed_samples | sed 's/_R.*//' | uniq))
+NUMFASTQ=${#FILES[@]}
+ZBNUMFASTQ=$(($NUMFASTQ - 1))
+sbatch --array=0-$ZBNUMFASTQ ~/Seq-Data/bwa_aligner_rerun.sbatch
+```
 
-`NUMFASTQ=${#FILES[@]}`
-
-`ZBNUMFASTQ=$(($NUMFASTQ - 1))`
-
-`sbatch --array=0-$ZBNUMFASTQ ~/Seq-Data/bwa_aligner_rerun.sbatch`
-
-_7:04pm 2019-09-04: Submitted batch job 21717236 - all but MA_8_F3_1045_S46_1 completed successfully_
-
-_10:16am 2019-09-05: Submitted batch job 21834974 - finish aligning last sample (MA_8_F3_1045_S46_1) [FAILED]_
-
-_12:24pm 2019-09-05: Submitted batch job 21853170 - try aligning MA_8_F3_1045_S46_1 sample again [FAILED]_
-
-_1:55pm 2019-09-05: Submitted batch job 21866109 - try aligning MA_8_F3_1045_S46_1, but delete offending line [now error is that paired mate read is missing]_
-
-_2:39pm 2019-09-05: Submitted batch job 21870635 - just align MA_8_F3_1045_S46_1, so can mess with SAM file independently [SAM FILE VALIDATED WITH NO ERRORS]_
-
-_4:07pm 2019-09-05: Submitted batch job 21880877 - try SAM to BAM conversion [FAILED]_
-
-_9:40pm 2019-09-05: Submitted batch job 21924059 - align MA_8_F3_1045_S46_1 again using shared partition_
-
-From here on try to debug this file by hand...
+_Persistent errors for MA_8_F3_1045_S46_1 SAM > BAM conversion. From here on try to debug this file by hand..._
 
 **THE ERROR HAS BEEN FOUND 9/10/2019: ** Apparently there are empty reads in several fastq files that get propagated into the SAM file and then cause hell - now the goal is to find those fastq files, filter out all reads that are empty, and redo the SAM/BAM file making! Ideally this will take care of most of the issues. Use Trimmomatic (download the jar file) to filter out the empty reads. 
 
-`FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/01_fastqs/failed_samples | sed 's/_R.*//' | uniq))`
-
-`NUMFASTQ=${#FILES[@]}`
-
-`ZBNUMFASTQ=$(($NUMFASTQ - 1))`
-
-`sbatch --array=0-$ZBNUMFASTQ ~/Seq-Data/bwa_aligner_rerun.sbatch`
+```
+FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/01_fastqs/failed_samples | sed 's/_R.*//' | uniq))
+NUMFASTQ=${#FILES[@]}
+ZBNUMFASTQ=$(($NUMFASTQ - 1))
+sbatch --array=0-$ZBNUMFASTQ ~/Seq-Data/bwa_aligner_rerun.sbatch
+```
 
 _4:03pm 2019-09-11: Submitted batch job 22799419 on shared partition_
 
@@ -297,11 +276,11 @@ Create new directory in 02_bams called merged_bams
 
 Get the number of unique BAM files:
 
-`FILES=($(cd /n/scratchlfs/debivort_lab/Jamilla/02_bams/ ; ls -1 *.bam | sed 's/_[12]_sorted.bam//' | uniq))`
-
-`NUMFASTQ=${#FILES[@]}`
-
-`ZBNUMFASTQ=$(($NUMFASTQ - 1))`
+```
+FILES=($(cd /n/scratchlfs/debivort_lab/Jamilla/02_bams/ ; ls -1 *.bam | sed 's/_[12]_sorted.bam//' | uniq))
+NUMFASTQ=${#FILES[@]}
+ZBNUMFASTQ=$(($NUMFASTQ - 1))
+```
 
 Make sure `echo $ZBNUMFASTQ` gives the number of unique samples - 1. 
 
@@ -325,6 +304,8 @@ _5:38pm 2019-09-11: Submitted batch job 22813054_
 
 `sacct -j 22813054 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State`
 
+
+
 ##### Submit the BAM deduplication and validation job array to SLURM
 
 Create new directory in 02_bams called final_bams
@@ -335,11 +316,11 @@ Create new directory in 02_bams called final_bams
 
 Get the number of unique BAM files:
 
-`FILES=($(cd /n/scratchlfs/debivort_lab/Jamilla/02_bams/merged_bams ; ls -1 *_merged.bam))`
-
-`NUMFASTQ=${#FILES[@]}`
-
-`ZBNUMFASTQ=$(($NUMFASTQ - 1))`
+```
+FILES=($(cd /n/scratchlfs/debivort_lab/Jamilla/02_bams/merged_bams ; ls -1 *_merged.bam))
+NUMFASTQ=${#FILES[@]}
+ZBNUMFASTQ=$(($NUMFASTQ - 1))
+```
 
 Make sure `echo $ZBNUMFASTQ` gives the number of unique samples - 1. 
 
@@ -365,9 +346,10 @@ _6:14pm 2019-09-11: Submitted batch job 22818718 on shared partition_
 
 Move all the final BAM files and their validation .txt files into the lab directory:
 
-`mkdir /n/debivort_lab/Jamilla_seq/final_bams`
-
-`rsync -va [SCRATCH DIR WITH FINAL BAMS] /n/debivort_lab/Jamilla_seq/final_bams`
+```
+mkdir /n/debivort_lab/Jamilla_seq/final_bams
+rsync -va [SCRATCH DIR WITH FINAL BAMS] /n/debivort_lab/Jamilla_seq/final_bams
+```
 
 
 
@@ -377,11 +359,13 @@ Move all the final BAM files and their validation .txt files into the lab direct
 
 ##### Load your modules
 
-`module load jdk/1.8.0_45-fasrc01` _version 8 of java to jive with GATK_
+```
+module load jdk/1.8.0_45-fasrc01` #version 8 of java to jive with GATK
+module load gatk/4.0.2.1-fasrc01
+module load samtools
+```
 
-`module load gatk/4.0.2.1-fasrc01`
 
-`module load samtools`
 
 ##### Index your genome - generate a .fai and a .dict file
 
@@ -444,13 +428,12 @@ Let's make a directory to store our GVCFs:
 
 Grab our final BAM files from the scratchlfs `Jamilla` directory
 
-`BAM_DIR=02_bams/final_bams`
-
-`FILES=($(ls -1 $BAM_DIR/*.bam | sed 's/02_bams\/final_bams\///'))`
-
-`NUMFASTQ=${#FILES[@]}`
-
-`ZBNUMFASTQ=$(($NUMFASTQ - 1))`
+```
+BAM_DIR=02_bams/final_bams
+FILES=($(ls -1 $BAM_DIR/*.bam | sed 's/02_bams\/final_bams\///'))
+NUMFASTQ=${#FILES[@]}
+ZBNUMFASTQ=$(($NUMFASTQ - 1))
+```
 
 Make sure `echo $ZBNUMFASTQ` gives the number of unique samples - 1. 
 
@@ -517,9 +500,10 @@ Make your chromosome list:
 
 Count them up:
 
-`NUMCHR=${#CHR[@]}`
-
-`ZBNUMCHR=$(($NUMCHR - 1))` 
+```
+NUMCHR=${#CHR[@]}
+ZBNUMCHR=$(($NUMCHR - 1))
+```
 
 Submit the job array:
 
@@ -533,9 +517,10 @@ _4:35pm 2019-09-18: Submitted batch job 24204901_
 
 Try GenomicsDBImport on 2R and 3L again: include this option:
 
-`TILEDB_DISABLE_FILE_LOCKING=1`
-
-`sbatch --array=1-2 ~/Seq-Data/gatk_genDBImport.sbatch`
+```
+TILEDB_DISABLE_FILE_LOCKING=1
+sbatch --array=1-2 ~/Seq-Data/gatk_genDBImport.sbatch
+```
 
 _5:23pm 2019-09-24: Submitted batch job 24958975_
 
@@ -547,9 +532,10 @@ _all jobs completed without error_
 
 Try GenomicsDBImport on 3R again: include this option:
 
-`TILEDB_DISABLE_FILE_LOCKING=1`
-
-`sbatch --array=3 ~/Seq-Data/gatk_genDBImport.sbatch`
+```
+TILEDB_DISABLE_FILE_LOCKING=1
+sbatch --array=3 ~/Seq-Data/gatk_genDBImport.sbatch
+```
 
 _11:55am 2019-09-26: Submitted batch job 25190849_
 
@@ -582,9 +568,10 @@ Make your chromosome list:
 
 Count them up:
 
-`NUMCHR=${#CHR[@]}`
-
-`ZBNUMCHR=$(($NUMCHR - 1))` 
+```
+NUMCHR=${#CHR[@]}
+ZBNUMCHR=$(($NUMCHR - 1))
+```
 
 Submit the job array:
 
@@ -638,11 +625,12 @@ Make your new chromosome list (inside job script too):
 
 **Request 4 days run time for this job!**
 
-`NUMCHR=${#CHR[@]}`
+```
+NUMCHR=${#CHR[@]}
+ZBNUMCHR=$(($NUMCHR - 1))
+```
 
-`ZBNUMCHR=$(($NUMCHR - 1))` 
-
-Submit the job array:
+ Submit the job array:
 
 `sbatch --array=0-$ZBNUMCHR ~/Seq-Data/gatk_GenotypeGVCF.sbatch`
 
@@ -742,7 +730,7 @@ N_GENO_FILTERED is the number of genotypes filtered out from the total SNP numbe
 
 The code for this is in `Variant_Analysis.sh`.
 
-First step is to make text files containing the samples from each population - I separated both by population and by experiment e.g ma_herit_files.txt or fl_var_files.txt (herit=heritability expt; var = variability expt). These files are stored in the `sample_names` subdirectory in the directory where the VCFs are stored. 
+First step is to make text files containing the samples from each population - I separated both by population and by experiment e.g ma_herit_files.txt or fl_var_files.txt (herit=heritability expt; var = variability expt). These files are stored in the `sample_names` subdirectory in the directory where the VCFs are stored and are organized by experiment. 
 
 **A single chromosome:**
 
@@ -760,17 +748,17 @@ Let's calculate fraction of missing genotypes for each individual using vcftools
 
 Let's filter out individuals with < 2x mean coverage and create a new VCF file for chr2L keeping only SNPs where <u>all</u> individuals with >2x coverage have a genotype:
 
-`awk '{if ($3 > 2) print $1}' output_files/meanDepth_2L.idepth | grep -v 'INDV' > sample_names/2L_filt_samples_all.txt `
+```
+awk '{if ($3 > 2) print $1}' output_files/meanDepth_2L.idepth | grep -v 'INDV' > sample_names/2L_filt_samples_all.txt
 
-`vcftools --gzvcf wildFlies_2L_filtered.vcf.gz --remove-filtered-all --keep sample_names/2L_filt_samples_all.txt --recode --max-missing 1 --out chr2L_fullGeno`
-
-
+vcftools --gzvcf wildFlies_2L_filtered.vcf.gz --remove-filtered-all --keep sample_names/2L_filt_samples_all.txt --recode --max-missing 1 --out chr2L_fullGeno
+```
 
 Use `chr2L_fullGeno.recode.vcf` filtered file in the downstream analysis. Filter it for a particular population (in this case, FL heritability flies):
 
-`vcftools --vcf chr2L_fullGeno.recode.vcf --keep sample_names/fl_herit_files.txt --recode --out chr2L_flHerit_fullGeno`
-
-
+```
+vcftools --vcf chr2L_fullGeno.recode.vcf --keep sample_names/fl_herit_files.txt --recode --out chr2L_flHerit_fullGeno
+```
 
 Use GATK's VariantToTable to make it this VCF into a tab-delimited file `chr2L_flHerit_fullGeno.table`with some summary fields:
 
@@ -820,17 +808,15 @@ I will use a cyvcf2/python script `vcf_to_mat.py`to make a custom matrix of geno
 
 
 
-I will use a cyvcf2/python script in a job submission to calculate 100 bootstrap estimates of segregating sites for each population. Let's start with the heritability flies. 
+I will use a cyvcf2/python script in a job submission to calculate 100 bootstrap estimates of segregating sites for each population with some subsampling. Let's start with the heritability flies. 
 
-`POP_FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/05_vcf/sample_names/herit_pops))`
-
-`NUMFILES=${#POP_FILES[@]}`
-
-`ZBNUMFILES=$(($NUMFILES - 1))`
-
-`sbatch --array=0-$ZBNUMFILES ~/Seq-Data/calcSegSites.sbatch`
-
-`sacct -j 29600106 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State`
+```
+POP_FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/05_vcf/sample_names/herit_pops))`
+NUMFILES=${#POP_FILES[@]}
+ZBNUMFILES=$(($NUMFILES - 1))
+sbatch --array=0-$ZBNUMFILES ~/Seq-Data/calcSegSites.sbatch
+sacct -j 29600106 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
+```
 
 
 
@@ -846,55 +832,15 @@ You have to run from the snpEff folder...and VCFs need an INFO field which to an
 
 Annotate all 2L variants (filtered for quality only):
 
-`java -jar snpEff.jar -v dmel_r6.28 $DIR_PATH/wildFlies_2L_filtered.vcf.gz > ​wildFlies_2L.ann.vcf`
+```
+java -jar snpEff.jar -v dmel_r6.28 $DIR_PATH/wildFlies_2L_filtered.vcf.gz > wildFlies_2L.ann.vcf
+```
 
 Annotate just the good-quality SNPs called for all individuals (47k SNPs):
 
-`java -jar snpEff.jar -v dmel_r6.28 $DIR_PATH/allChr_fullGeno.recode.vcf > allChr_fullGeno.recode.ann.vcf`
-
-
-
-
-
-
-
-
-
-_Run a job array where you extract a particular group of samples e.g. FL heritability, MA variability, etc. from the above VCF and then make a variant table from those samples._
-
-`POP_FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/05_vcf/sample_names))`
-
-`NUMFILES=${#POP_FILES[@]}`
-
-`ZBNUMFILES=$(($NUMFILES - 1))`
-
-`sbatch --array=0-$ZBNUMFILES ~/Seq-Data/splitVCFbyPop.sbatch`
-
-
-
-
-
-One complexity: after 'haplodification' - maybe filter seg sites by allele freq**
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-cyvcf2 for python
-
-vcftools to compute coverage/fraction missing/pi 
-
-
+```
+java -jar snpEff.jar -v dmel_r6.28 $DIR_PATH/allChr_fullGeno.recode.vcf > allChr_fullGeno.recode.ann.vcf
+```
 
 
 
