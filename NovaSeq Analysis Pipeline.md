@@ -2,10 +2,6 @@
 
 ###### created by Jamilla Akhund-Zade
 
-###### last modified 2019-10-17
-
-
-
 [TOC]
 
 
@@ -826,7 +822,7 @@ I created a new database with genome annotations using the r6.28 genome release 
 
 You have to run from the snpEff folder...and VCFs need an INFO field which to annotate (--recode-INFO-all to keep original INFO field when making a new filtered VCF with vcftools). 
 
-`DIR_PATH='/n/scratchlfs/debivort_lab/Jamilla/05_vcf'`
+`DIR_PATH='/n/debivort_lab/Jamilla_seq/final_vcfs'`
 
 Annotate all 2L variants (filtered for quality only):
 
@@ -840,9 +836,21 @@ Annotate just the good-quality SNPs called for all individuals (47k SNPs):
 java -jar snpEff.jar -v dmel_r6.28 $DIR_PATH/allChr_fullGeno.recode.vcf > allChr_fullGeno.recode.ann.vcf
 ```
 
+Note about variant counts in snpEff_summary.html: https://github.com/pcingola/SnpEff/wiki/Number-of-variants-in-VCF-and-HTML-summary-do-not-match
 
+<u>Filter using SnpSift:</u>
 
+```
+java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'intron_variant') || (ANN[*].EFFECT has 'synonymous_variant') || (ANN[*].EFFECT has '5_UTR_variant') || (ANN[*].EFFECT has '3_UTR_variant')" allChr_fullGeno.recode.ann.vcf > genic_snps.vcf
 
+grep -v '#' genic_snps.vcf | wc -l #count SNPs retained
+```
+
+```
+java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'intron_variant') || (ANN[*].EFFECT has 'synonymous_variant') || (ANN[*].EFFECT has '5_UTR_variant') || (ANN[*].EFFECT has '3_UTR_variant')" allChr_fullGeno.recode.ann.vcf > genic_snps.vcf
+
+grep -v '#' genic_snps.vcf | wc -l #count SNPs retained
+```
 
 
 
