@@ -798,7 +798,7 @@ _After filtering, kept 46988 out of a possible 11845697 Sites_
 
 I will use a cyvcf2/python script `vcf_to_mat.py`to make a custom matrix of genotypes (47k sites x 246 flies). [Follow these instructions for getting bioconda](https://bioconda.github.io/user/install.html#install-conda). This `genotype_matrix.table` will then be used for estimating number of segregating sites using bootstrapping of individuals and heterozygous sites. 
 
-`python ~/Seq-Data/vcf_to_mat.py`
+`python ~/Seq-Data/variant_processing/vcf_to_mat.py`
 
 
 
@@ -840,20 +840,81 @@ Note about variant counts in snpEff_summary.html: https://github.com/pcingola/Sn
 
 <u>Filter using SnpSift:</u>
 
+Filter for just variants with warnings:
+
+```
+java -jar SnpSift.jar filter "(ANN[*].ERRORS =~ 'WARNING') || (ANN[*].ERRORS =~ 'INFO')" allChr_fullGeno.recode.ann.vcf > warning_snps.vcf
+
+grep -v '#' warning_snps.vcf | wc -l #count SNPs retained
+>2271
+
+grep -v '#' warning_snps.vcf | grep -E 'WARNING|INFO|ERROR' | wc -l #any warnings remain?
+>2271
+```
+
+SNPs that hit a gene:
+
 ```
 java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'intron_variant') || (ANN[*].EFFECT has 'synonymous_variant') || (ANN[*].EFFECT has '5_UTR_variant') || (ANN[*].EFFECT has '3_UTR_variant')" allChr_fullGeno.recode.ann.vcf > genic_snps.vcf
 
 grep -v '#' genic_snps.vcf | wc -l #count SNPs retained
+>37329
 ```
 
+SNPs that hit an exon (coding):
+
 ```
-java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'intron_variant') || (ANN[*].EFFECT has 'synonymous_variant') || (ANN[*].EFFECT has '5_UTR_variant') || (ANN[*].EFFECT has '3_UTR_variant')" allChr_fullGeno.recode.ann.vcf > genic_snps.vcf
+java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'synonymous_variant')" allChr_fullGeno.recode.ann.vcf > exonic_snps.vcf
 
-grep -v '#' genic_snps.vcf | wc -l #count SNPs retained
+grep -v '#' exonic_snps.vcf | wc -l #count SNPs retained
+>25577
 ```
 
+Missense only SNPs:
 
+```
+java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant')" allChr_fullGeno.recode.ann.vcf > missense_snps.vcf
 
+grep -v '#' missense_snps.vcf | wc -l #count SNPs retained
+>11221
+```
 
+Filter for just variants with NO warnings:
 
+```
+java -jar SnpSift.jar filter -n "(ANN[*].ERRORS =~ 'WARNING') || (ANN[*].ERRORS =~ 'INFO')" allChr_fullGeno.recode.ann.vcf > anno_PASS_snps.vcf
+
+grep -v '#' anno_PASS_snps.vcf | wc -l #count SNPs retained
+>44717
+
+grep -v '#' anno_PASS_snps.vcf | grep -E 'WARNING|INFO|ERROR' | wc -l #any warnings remain?
+>0
+```
+
+SNPs that hit a gene (no warnings):
+
+```
+java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'intron_variant') || (ANN[*].EFFECT has 'synonymous_variant') || (ANN[*].EFFECT has '5_UTR_variant') || (ANN[*].EFFECT has '3_UTR_variant')" anno_PASS_snps.vcf > genic_PASS_snps.vcf
+
+grep -v '#' genic_PASS_snps.vcf | wc -l #count SNPs retained
+>35904
+```
+
+SNPs that hit an exon (coding; no warnings):
+
+```
+java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'synonymous_variant')" anno_PASS_snps.vcf > exonic_PASS_snps.vcf
+
+grep -v '#' exonic_PASS_snps.vcf | wc -l #count SNPs retained
+>24683
+```
+
+Missense only SNPs (no warnings):
+
+```
+java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant')" anno_PASS_snps.vcf > missense_PASS_snps.vcf
+
+grep -v '#' missense_PASS_snps.vcf | wc -l #count SNPs retained
+>10809
+```
 
