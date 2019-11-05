@@ -796,16 +796,14 @@ _After filtering, kept 46988 out of a possible 11845697 Sites_
 
 
 
-I will use a cyvcf2/python script `vcf_to_mat.py`to make a custom matrix of genotypes (47k sites x 246 flies). [Follow these instructions for getting bioconda](https://bioconda.github.io/user/install.html#install-conda). This `genotype_matrix.table` will then be used for estimating number of segregating sites using bootstrapping of individuals and heterozygous sites. 
+I will use a cyvcf2/python script `vcf_to_mat.py`to make a custom matrix of genotypes (47k sites x 246 flies). [Follow these instructions for getting bioconda](https://bioconda.github.io/user/install.html#install-conda). This `genotype_matrix_all.table` will then be used for estimating number of segregating sites using bootstrapping of individuals and heterozygous sites. 
 
-`python ~/Seq-Data/variant_processing/vcf_to_mat.py`
-
-
+`python ~/Seq-Data/variant_processing/vcf_to_mat.py 46988 allChr_fullGeno.recode.vcf all`
 
 I will use a cyvcf2/python script in a job submission to calculate 100 bootstrap estimates of segregating sites for each population with some subsampling. Let's start with the heritability flies. 
 
 ```
-POP_FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/05_vcf/sample_names/herit_pops))`
+POP_FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/05_vcf/sample_names/herit_pops))
 NUMFILES=${#POP_FILES[@]}
 ZBNUMFILES=$(($NUMFILES - 1))
 sbatch --array=0-$ZBNUMFILES ~/Seq-Data/calcSegSites.sbatch
@@ -916,5 +914,54 @@ java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant')" anno_PASS_
 
 grep -v '#' missense_PASS_snps.vcf | wc -l #count SNPs retained
 >10809
+```
+
+##### Bootstrapping with different SNP types:
+
+```
+cd /n/debivort_lab/Jamilla_seq/final_vcfs
+module load Anaconda3/5.0.1-fasrc02
+source activate py_env
+
+#genic snps
+NUM_SNPS=$(grep -v '#' genic_PASS_snps.vcf | wc -l)
+python ~/Seq-Data/variant_processing/vcf_to_mat.py $NUM_SNPS genic_PASS_snps.vcf genic
+
+#exonic snps
+NUM_SNPS=$(grep -v '#' exonic_PASS_snps.vcf | wc -l)
+python ~/Seq-Data/variant_processing/vcf_to_mat.py $NUM_SNPS exonic_PASS_snps.vcf exon
+
+#nonsyn snps
+NUM_SNPS=$(grep -v '#' missense_PASS_snps.vcf | wc -l)
+python ~/Seq-Data/variant_processing/vcf_to_mat.py $NUM_SNPS missense_PASS_snps.vcf nonsyn
+```
+
+```
+cd /n/scratchlfs/debivort_lab/Jamilla/05_vcf
+
+#genic snps bootstrap
+POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/herit_pops))
+NUMFILES=${#POP_FILES[@]}
+ZBNUMFILES=$(($NUMFILES - 1))
+sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
+sacct -j 31672677 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
+```
+
+```
+#exonic snps bootstrap
+POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/herit_pops))
+NUMFILES=${#POP_FILES[@]}
+ZBNUMFILES=$(($NUMFILES - 1))
+sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
+sacct -j 31683926 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
+```
+
+```
+#nonsyn snps bootstrap
+POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/herit_pops))
+NUMFILES=${#POP_FILES[@]}
+ZBNUMFILES=$(($NUMFILES - 1))
+sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
+sacct -j  --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
 ```
 
