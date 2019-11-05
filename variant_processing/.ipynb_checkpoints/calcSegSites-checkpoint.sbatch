@@ -20,7 +20,7 @@ source activate py_env
 #get your population
 NAME_FILES=($(ls -1 sample_names/herit_pops))
 OUT_NAME=$(echo ${NAME_FILES[$SLURM_ARRAY_TASK_ID]} | egrep -o '.._herit|.._var')
-VAR_TYPE='nonsyn'
+VAR_TYPE='genic'
 
 #run the python script
 python ~/Seq-Data/variant_processing/bootstrap_indvs.py sample_names/herit_pops/ca_herit_files_v2.txt sample_names/herit_pops/${NAME_FILES[$SLURM_ARRAY_TASK_ID]} $OUT_NAME $VAR_TYPE
