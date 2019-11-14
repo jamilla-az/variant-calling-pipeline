@@ -962,6 +962,6 @@ POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/herit_pop
 NUMFILES=${#POP_FILES[@]}
 ZBNUMFILES=$(($NUMFILES - 1))
 sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
-sacct -j  --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
+sacct -j 31690884 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
 ```
 

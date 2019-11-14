@@ -60,9 +60,9 @@ vcftools --vcf allChr_fullGeno.recode.vcf --keep sample_names/fl_herit_files.txt
 grep '^MA_[0-9]*_F[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > ma_herit_files.txt
 awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/herit_pops/ma_herit_files.txt > sample_names/herit_pops/ma_herit_files_v2.txt
 
-
 #MA flies - variability only
 grep '^MA_[0-9]*_[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > ma_var_files.txt
+awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/var_pops/ma_var_files.txt > sample_names/var_pops/ma_var_files_v2.txt
 
 #FL flies - heritability only
 grep '^FL_[0-9]*_F[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > fl_herit_files.txt
@@ -70,6 +70,7 @@ awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/herit_pops/fl_h
 
 #FL flies - variability only
 grep -E '^(FL|MIA)_[0-9]*_[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > fl_var_files.txt
+awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/var_pops/fl_var_files.txt > sample_names/var_pops/fl_var_files_v2.txt
 
 #VA flies - heritability only
 grep '^VA_[0-9]*_F[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > va_herit_files.txt
@@ -77,6 +78,7 @@ awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/herit_pops/va_h
 
 #VA flies - variability only
 grep '^CM[0-9]*' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > va_var_files.txt
+awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/var_pops/va_var_files.txt > sample_names/var_pops/va_var_files_v2.txt
 
 #TX flies - heritability only
 grep '^TX_[0-9]*_F[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > tx_herit_files.txt
@@ -84,6 +86,7 @@ awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/herit_pops/tx_h
 
 #TX flies - variability only
 grep '^TX_[0-9]*_[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > tx_var_files.txt
+awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/var_pops/tx_var_files.txt > sample_names/var_pops/tx_var_files_v2.txt
 
 #PA flies - heritability only
 grep '^PA_[0-9]*_F[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > pa_herit_files.txt
@@ -91,6 +94,7 @@ awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/herit_pops/pa_h
 
 #PA flies - variability only
 grep '^PA_[0-9]*_[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > pa_var_files.txt
+awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/var_pops/pa_var_files.txt > sample_names/var_pops/pa_var_files_v2.txt
 
 #CA flies - heritability only
 grep '^CA_[0-9]*_F[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > ca_herit_files.txt
@@ -98,6 +102,8 @@ awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/herit_pops/ca_h
 
 #CA flies - variability only
 grep '^CA_[0-9]*_[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > ca_var_files.txt
+awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/var_pops/ca_var_files.txt > sample_names/var_pops/ca_var_files_v2.txt
 
 #BERK flies - variability only
 grep '^BERK_[0-9]*_[0-9]' ../gvcf_files.txt | sed 's/.raw.g.vcf//' | uniq > berk_var_files.txt
+awk 'BEGIN {FS ="_";OFS ="\t"};{print $0,$1,$2,$3}' sample_names/var_pops/berk_var_files.txt > sample_names/var_pops/berk_var_files_v2.txt
