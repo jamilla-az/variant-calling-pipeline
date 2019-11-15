@@ -806,8 +806,28 @@ I will use a cyvcf2/python script in a job submission to calculate 100 bootstrap
 POP_FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/05_vcf/sample_names/herit_pops))
 NUMFILES=${#POP_FILES[@]}
 ZBNUMFILES=$(($NUMFILES - 1))
-sbatch --array=0-$ZBNUMFILES ~/Seq-Data/calcSegSites.sbatch
+sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
 sacct -j 29600106 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
+```
+
+Now, variability flies:
+
+```
+POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/var_pops))
+NUMFILES=${#POP_FILES[@]}
+ZBNUMFILES=$(($NUMFILES - 1))
+sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
+sacct -j 32667850 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
+```
+
+Variability flies - segregating sites per line:
+
+```
+POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/var_pops))
+NUMFILES=${#POP_FILES[@]}
+ZBNUMFILES=$(($NUMFILES - 1))
+sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites_noBoot.sbatch
+sacct -j 32691186 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
 ```
 
 

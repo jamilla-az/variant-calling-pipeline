@@ -19,8 +19,8 @@ source activate py_env
 
 #get your population
 NAME_FILES=($(ls -1 sample_names/var_pops))
-OUT_NAME=$(echo ${NAME_FILES[1]} | egrep -o '.._herit|.._var|...._var')
+OUT_NAME=$(echo ${NAME_FILES[$SLURM_ARRAY_TASK_ID]} | egrep -o '.._herit|.._var|...._var')
 VAR_TYPE='all'
 
 #run the python script
-python ~/Seq-Data/variant_processing/count_seg_sites.py sample_names/herit_pops/${NAME_FILES[$SLURM_ARRAY_TASK_ID]} $OUT_NAME $VAR_TYPE
+python ~/Seq-Data/variant_processing/count_seg_sites.py sample_names/var_pops/${NAME_FILES[$SLURM_ARRAY_TASK_ID]} $OUT_NAME $VAR_TYPE
