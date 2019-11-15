@@ -13,7 +13,7 @@ def main():
         description='Bootstrap estimator for number of segregating sites')
 
     parser.add_argument('base_file', type=str,
-                        help='table of base (CA) individuals labels')
+                        help='table of base (CA for herit, BERK for var) individuals labels')
     parser.add_argument('indv_file', type=str,
                         help='table of X pop individuals labels')
     parser.add_argument('output_label', type=str,
@@ -24,7 +24,7 @@ def main():
     args = parser.parse_args()
     print(f'using the following list of individuals: {args.indv_file}')
 
-    # dataframe of CA individuals as baseline for bootstrapping
+    # dataframe of individuals as baseline for bootstrapping
     base_df = pd.read_csv(args.base_file, sep='\t', header=None,
                           index_col=0, names=['loc', 'line', 'num'])
 
@@ -34,7 +34,7 @@ def main():
 
     # dataframe of genotypes x individuals
     geno_df = pd.read_csv(
-        f'output_files/genotype_matrix_{args.var_type}.table', sep='\t')
+        f'/n/debivort_lab/Jamilla_seq/final_vcfs/output_files/genotype_matrix_{args.var_type}.table', sep='\t')
     # print(geno_df.head())
 
     # find the individuals with called genotypes in the list of individuals to use
@@ -90,8 +90,9 @@ def main():
 
     print(
         f'saving list as output_files/boot_{args.output_label}_segsites_{args.var_type}.table')
-    pd.DataFrame({'seg_sites': seg_sites}).to_csv(
-        f'output_files/boot_{args.output_label}_segsites_{args.var_type}.table', sep='\t', index=False)
+    print(pd.DataFrame({'seg_sites': seg_sites}))
+    # pd.DataFrame({'seg_sites': seg_sites}).to_csv(
+    # f'output_files/boot_{args.output_label}_segsites_{args.var_type}.table', sep='\t', index=False)
 
 
 if __name__ == '__main__':
