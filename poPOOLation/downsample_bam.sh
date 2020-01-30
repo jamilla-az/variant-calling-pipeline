@@ -1,10 +1,10 @@
 #!/bin/bash
 #
 #SBATCH -J bam_downsample # A single job name for the array
-#SBATCH -p serial_requeue # Partition
+#SBATCH -p shared # Partition
 #SBATCH -n 1 # one core
 #SBATCH -N 1 # on one node
-#SBATCH -t 0-0:30 # Running time of 30 min
+#SBATCH -t 0-0:15 # Running time of 15 min
 #SBATCH --mem 6000 # Memory request of 6 GB
 #SBATCH -o tmp/bamSample_%A_%a.out # Standard output (what is written to console)
 #SBATCH -e tmp/bamSample_%A_%a.err # Standard error (errors written to console)
