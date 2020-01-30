@@ -15,7 +15,7 @@
 module load samtools
 
 #specify the minimum read count
-MIN_READS=100000
+MIN_READS=$(samtools view -c /n/debivort_lab/Jamilla_seq/final_bams/CA_3_F1_1004_S5_final.bam)
 
 #specify bam file
 FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_bams/*.bam))
