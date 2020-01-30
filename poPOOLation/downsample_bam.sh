@@ -18,8 +18,11 @@ module load samtools
 MIN_READS=$(samtools view -c /n/debivort_lab/Jamilla_seq/final_bams/CA_3_F1_1004_S5_final.bam)
 
 #specify bam file
-FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_bams/*.bam))
-SAMPLE=${FILES[$SLURM_ARRAY_TASK_ID]}
+#FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_bams/*.bam))
+#SAMPLE=${FILES[$SLURM_ARRAY_TASK_ID]}
+
+#specify bam files to rerun
+SAMPLE=$(sed "${SLURM_ARRAY_TASK_ID}q;d" ~/Seq-Data/poPOOLation/bams_to_sample.txt)
 SAMPLE_NAME=$(echo $SAMPLE | sed 's/_final.bam//' | sed 's/\/n\/debivort_lab\/Jamilla_seq\/final_bams\///')
 
 #count the num of reads in the current bam
