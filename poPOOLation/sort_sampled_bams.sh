@@ -11,8 +11,8 @@
 #SBATCH --account=debivort_lab
 #SBATCH --open-mode=append
 
-#load java module
-module load Java/1.8
+#load java dev kit module
+module load jdk/1.8.0_172-fasrc01
 
 #pick subsampled BAM file
 FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/subsampled_bams/*.bam))
@@ -22,6 +22,6 @@ SAMPLE_NAME=$(echo $SAMPLE | sed 's/_subsample.bam//' | sed 's/\/n\/debivort_lab
 #sort it and output index file and sorted BAM
 java -jar ~/picard.jar SortSam \
 I=${SAMPLE} \
-O=/n/debivort_labs/Jamilla_seq/subsampled_bams/sorted_bams/${SAMPLE_NAME}_sampled_sort.bam \
+O=/n/debivort_lab/Jamilla_seq/subsampled_bams/sorted_bams/${SAMPLE_NAME}_sampled_sort.bam \
 SORT_ORDER=coordinate \
 CREATE_INDEX=true
