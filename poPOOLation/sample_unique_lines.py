@@ -24,7 +24,7 @@ def main():
     # find the unique lines
     lines = pd.read_csv(args.bam_list, sep='\/',
                         header=None, engine='python')
-    lines = lines.iloc[:, 5].str.split("_", n=2, expand=True)
+    lines = lines.iloc[:, 6].str.split("_", n=2, expand=True)
     uniq_lines = lines.iloc[:, 1].unique()
 
     # sample n unique lines
