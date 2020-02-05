@@ -41,18 +41,20 @@ def main():
     # this are the individuals we will bootstrap from
     boot_indv = [i for i in indv_df.index if i in geno_df.columns]
     indv_df = indv_df.loc[boot_indv]
-    ca_indv = [i for i in base_df.index if i in geno_df.columns]
+    #ca_indv = [i for i in base_df.index if i in geno_df.columns]
     seg_sites = []  # set empty list to store bootstrap output
+
+    # what is the line/indv breakdown in the base pop?
+    #ids = random.choices(ca_indv, k=len(ca_indv))
+    # lines = base_df['line'].loc[ids].value_counts().to_frame(
+    # name='num_indv')
+    lines = base_df['line'].value_counts().to_frame(
+        name='num_indv')
 
     # 100 bootstraps
     random.seed(0)
     for n in np.arange(0, 100):
         print(f'sampling individuals with replacement: iter {n+1}')
-        # bootstrap your base individuals and count up the number of individuals in each line
-        ids = random.choices(ca_indv, k=len(ca_indv))
-        lines = base_df['line'].loc[ids].value_counts().to_frame(
-            name='num_indv')
-
         # bootstrap your other individuals to follow the same line/num_indvs breakdown
         inds_list = []
         l = random.sample(list(indv_df['line'].unique()), len(lines))
