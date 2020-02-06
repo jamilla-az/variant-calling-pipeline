@@ -18,7 +18,7 @@ module load jdk/1.8.0_45-fasrc01 #java
 CHR=(2L 2R 3L 3R X 4)
 SAMPLE=${CHR[$SLURM_ARRAY_TASK_ID]}
 
-OUT_PATH=/n/debivort_lab/Jamilla_seq #make sure there is a tmp dir in genDB dir
+OUT_PATH=/n/debivort_lab/Jamilla_seq #make sure there is a tmp dir in genDB dir and this one
 
 ~/gatk-4.1.3.0/gatk GenomicsDBImport \
 --java-options "-Xmx8g" \
