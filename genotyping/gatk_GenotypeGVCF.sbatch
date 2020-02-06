@@ -26,4 +26,4 @@ cd 05_vcf
 -R ../00_genome/dmel-all-chromosome-r6.28.fasta \
 -V gendb://../04_genDB/my_database_${SAMPLE} \
 -O wildFlies_${SAMPLE}.vcf.gz \
---tmp-dir=tmp
+--tmp-dir=$SCRATCH/debivort_lab/tmp

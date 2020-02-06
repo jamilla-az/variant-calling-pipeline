@@ -25,6 +25,5 @@ cd 04_genDB #make sure there is a tmp dir there
 --genomicsdb-workspace-path my_database_${SAMPLE} \
 --batch-size 50 \
 -L $SAMPLE \
---tmp-dir=tmp \
+--tmp-dir=$SCRATCH/debivort_lab/tmp \
 --sample-name-map ../gvcf.sample_map
-
