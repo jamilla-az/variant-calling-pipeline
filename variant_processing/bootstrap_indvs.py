@@ -91,10 +91,10 @@ def main():
         seg_sites.append(ss)
 
     print(
-        f'saving list as output_files/boot_{args.output_label}_segsites_{args.var_type}.table')
+        f'saving list as /n/debivort_lab/Jamilla_seq/final_vcfs/output_files/boot_{args.output_label}_segsites_{args.var_type}.table')
     #print(pd.DataFrame({'seg_sites': seg_sites}))
     pd.DataFrame({'seg_sites': seg_sites}).to_csv(
-        f'output_files/boot_{args.output_label}_segsites_{args.var_type}.table', sep='\t', index=False)
+        f'/n/debivort_lab/Jamilla_seq/final_vcfs/output_files/boot_{args.output_label}_segsites_{args.var_type}.table', sep='\t', index=False)
 
 
 if __name__ == '__main__':
