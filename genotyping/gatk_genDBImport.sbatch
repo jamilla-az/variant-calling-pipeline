@@ -18,12 +18,12 @@ module load jdk/1.8.0_45-fasrc01 #java
 CHR=(2L 2R 3L 3R X 4)
 SAMPLE=${CHR[$SLURM_ARRAY_TASK_ID]}
 
-cd 04_genDB #make sure there is a tmp dir there
+OUT_PATH=/n/debivort_lab/Jamilla_seq #make sure there is a tmp dir in genDB dir
 
 ~/gatk-4.1.3.0/gatk GenomicsDBImport \
 --java-options "-Xmx8g" \
---genomicsdb-workspace-path my_database_${SAMPLE} \
+--genomicsdb-workspace-path $OUT_PATH/genDB/my_database_${SAMPLE} \
 --batch-size 50 \
 -L $SAMPLE \
 --tmp-dir=$SCRATCH/debivort_lab/tmp \
---sample-name-map ../gvcf.sample_map
+--sample-name-map $OUT_PATH/gvcf.sample_map
