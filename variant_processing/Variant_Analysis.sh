@@ -28,28 +28,58 @@ O=wildFlies_all.vcf.gz
 --filter-name "bad"
 
 #calc missingness per indv
-vcftools --gzvcf wildFlies_all_filtered.vcf.gz --remove-filtered-all --missing-indv --out output_files/missing_indv_all
+vcftools --gzvcf wildFlies_all_filtered.vcf.gz \
+--remove-filtered-all \
+--missing-indv \
+--out output_files/missing_indv_all
 
 #calculate mean depth per individual and return an idepth file
-vcftools --gzvcf wildFlies_all_filtered.vcf.gz --remove-filtered-all --depth --out output_files/meanDepth_all_filt
+vcftools --gzvcf wildFlies_all_filtered.vcf.gz \
+--remove-filtered-all \
+--depth \
+--out output_files/meanDepth_all_filt
 
 #filter out individuals with very low coverage 
 awk '{if ($3 > 2) print $1}' output_files/meanDepth_all_filt.idepth | grep -v 'INDV' > sample_names/filt_samples_all.txt
 
-#filter out all sites that have any missing data
-vcftools --gzvcf wildFlies_all_filtered.vcf.gz --remove-filtered-all --keep sample_names/filt_samples_all.txt --recode --max-missing 1 --out allChr_fullGeno
-
 #filter out all sites that have any missing data and keep original info field
-vcftools --gzvcf wildFlies_all_filtered.vcf.gz --remove-filtered-all --keep sample_names/filt_samples_all.txt --recode --recode-INFO-all --max-missing 1 --out allChr_fullGeno
+vcftools --gzvcf wildFlies_all_filtered.vcf.gz \
+--remove-filtered-all \
+--keep sample_names/filt_samples_all.txt \
+--recode \
+--recode-INFO-all \
+--max-missing 1 \
+--out allChr_fullGeno
 
-#filter for a particular population
-vcftools --vcf allChr_fullGeno.recode.vcf --keep sample_names/fl_herit_files.txt --recode --out allChr_flHerit_fullGeno
+#filter out all sites that have any missing data and keep original info field - biallelic sites only
+vcftools --gzvcf wildFlies_all_filtered.vcf.gz \
+--remove-filtered-all \
+--keep sample_names/filt_samples_all.txt \
+--recode \
+--recode-INFO-all \
+--max-missing 0.5 \
+--remove-indels \
+--min-alleles 2 \
+--max-alleles 2 \
+--maf 0.05 \
+--out allChr_halfGeno_biallelic
 
-#make VCF into tab-delimited file
-~/gatk-4.1.3.0/gatk VariantsToTable \
--V allChr_flHerit_fullGeno.recode.vcf \
--F CHROM -F POS -F TYPE -F HET -F HOM-REF -F HOM-VAR -F NO-CALL -F NSAMPLES -F NCALLED \
--O output_files/allChr_flHerit_fullGeno.table \
+#filter for a particular population and chr
+vcftools --gzvcf wildFlies_3R.vcf.gz \
+--keep sample_names/herit_pops/va_herit_files_v2.txt \
+--recode \
+--recode-INFO-all \
+--out va_herit_3R
+
+#calc missingness per indv for VA flies on chr 3R
+vcftools --vcf va_herit_3R.recode.vcf \
+--missing-indv \
+--out output_files/missing_indv_va_X_4_nonfilt
+
+#calc mean depth per indv for VA flies on chr 3R
+vcftools --vcf va_herit_3R.recode.vcf \
+--depth \
+--out output_files/meanDepth_va_3R_nonfilt
 
 
 
