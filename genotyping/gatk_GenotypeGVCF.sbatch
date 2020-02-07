@@ -19,7 +19,7 @@ module load jdk/1.8.0_45-fasrc01 #java
 CHR=(2L 2R 3L 3R X 4)
 SAMPLE=${CHR[$SLURM_ARRAY_TASK_ID]}
 
-OUT_DIR=/n/debivort_lab/Jamilla_seq
+OUT_DIR=$SCRATCH/debivort_lab
 GENO_DIR=~/Seq-Data
 
 ~/gatk-4.1.3.0/gatk GenotypeGVCFs \
