@@ -20,11 +20,11 @@ CHR=(2L 2R 3L 3R X 4)
 SAMPLE=${CHR[$SLURM_ARRAY_TASK_ID]}
 
 OUT_DIR=$SCRATCH/debivort_lab
-GENO_DIR=~/Seq-Data
+#GENO_DIR=~/Seq-Data
 
 ~/gatk-4.1.3.0/gatk GenotypeGVCFs \
 --java-options "-Xmx8g" \
--R $GENO_DIR/00_genome/dmel-all-chromosome-r6.28.fasta \
+-R $OUT_DIR/dmel-all-chromosome-r6.28.fasta \
 -V gendb://$OUT_DIR/genDB/my_database_${SAMPLE} \
 -O $OUT_DIR/final_vcfs/wildFlies_${SAMPLE}.vcf.gz \
 --tmp-dir=$SCRATCH/debivort_lab/tmp
