@@ -1,5 +1,8 @@
 #!/bin/bash
 
+LAB_DIR=/n/debivort_lab/Jamilla_seq/final_vcfs
+SCR_DIR=$SCRATCH/debivort_lab/final_vcfs
+USER_DIR=~/Seq-Data
 #load some modules
 module load jdk/1.8.0_45-fasrc01 #java
 module load vcftools
@@ -21,7 +24,7 @@ O=wildFlies_all.vcf.gz
 
 #hard filter variants based on quality metrics
 ~/gatk-4.1.3.0/gatk VariantFiltration \
--R ../00_genome/dmel-all-chromosome-r6.28.fasta \
+-R $USER_DIR/00_genome/dmel-all-chromosome-r6.28.fasta \
 -V wildFlies_all.vcf.gz \
 -O wildFlies_all_filtered.vcf.gz \
 --filter-expression "QD < 2.0 || MQ < 40.0 || SOR > 3.0 || FS > 60.0" \
@@ -57,29 +60,17 @@ vcftools --gzvcf wildFlies_all_filtered.vcf.gz \
 --keep sample_names/filt_samples_all.txt \
 --recode \
 --recode-INFO-all \
---max-missing 0.5 \
+--max-missing 1 \
 --remove-indels \
 --min-alleles 2 \
 --max-alleles 2 \
 --maf 0.05 \
---out allChr_halfGeno_biallelic
+--out allChr_fullGeno_biallelic
 
-#filter for a particular population and chr
-vcftools --gzvcf wildFlies_3R.vcf.gz \
---keep sample_names/herit_pops/va_herit_files_v2.txt \
---recode \
---recode-INFO-all \
---out va_herit_3R
+#look at per chr breakdown of SNPs
+grep -v '#' allChr_fullGeno_biallelic.recode.vcf | awk '$1=="3R" {print}' | wc -l
 
-#calc missingness per indv for VA flies on chr 3R
-vcftools --vcf va_herit_3R.recode.vcf \
---missing-indv \
---out output_files/missing_indv_va_X_4_nonfilt
 
-#calc mean depth per indv for VA flies on chr 3R
-vcftools --vcf va_herit_3R.recode.vcf \
---depth \
---out output_files/meanDepth_va_3R_nonfilt
 
 
 
