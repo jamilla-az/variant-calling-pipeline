@@ -363,7 +363,7 @@ This step will take all 273 GVCF files and make them into one database that you 
 
 
 
-##### Let's try it for combining 2 samples with one to all chromosomes:
+##### Combining 2 samples with one to all chromosomes:
 
 `mkdir 04_testGenDB` in `scratchlfs/debivort_lab/Jamilla` : you will need lots of space for processing
 
@@ -373,7 +373,7 @@ Run code from `~/Seq-Data/sample_scripts/sample_genDBImport.sh`
 
 
 
-##### Make sample map for all 273 samples for SLURM job submission:
+##### Make sample map for all 273 samples for batch job submission:
 
 From the [GATK GenomicsDBImport description](https://software.broadinstitute.org/gatk/documentation/tooldocs/4.1.3.0/org_broadinstitute_hellbender_tools_genomicsdb_GenomicsDBImport.php#--intervals): 
 
@@ -390,7 +390,7 @@ Run code from `~/Seq-Data/makeSampleMap.sh`
 
 
 
-##### Submit SLURM job array with one job per chromosome:
+##### Submit GenomicsDBImport job array with one job per chromosome:
 
 Make sure you are in the scratchlfs `Jamilla` directory.
 
@@ -469,7 +469,7 @@ _N.B. this only works if you have more than 1 read supporting each allele, other
 
 _You can [extract all this information from VCF file to a tab-delimited file](https://software.broadinstitute.org/gatk/documentation/tooldocs/3.8-0/org_broadinstitute_gatk_tools_walkers_variantutils_VariantsToTable.php) with VariantsToTable and plot the density in R, for example. This can be useful if you have some prior knowledge of what SNPs are true SNPs, so you can look at their metrics compared to 'failing' SNPs, but less useful when you don't have that knowledge - you will just be able to look at overall distributions of the information field across all SNPs._
 
-Now let's run some code from `~/Seq-Data/sample_VariantProcessing.sh`
+Process the VCF using the script:  `~/Seq-Data/sample_VariantProcessing.sh`
 
 About half the SNPs lack a RankSum test value because the two samples are homozygous at this site (either for ref or alt allele), but the key is that there is no heterozygous individual for this SNP. This issue will likely disappear as more samples are added. 
 
@@ -499,7 +499,7 @@ N_GENO_FILTERED is the number of genotypes filtered out from the total SNP numbe
 
 ### Full Genome VCFs
 
-The code for this is in `Variant_Analysis.sh`.
+The code for this is in`variant_processing/Variant_Analysis.sh`.
 
 Make one large vcf file with all the chromosomes using `GatherVcfs` from Picard. Index this file with `IndexFeatureFile` from GATK (takes some time, but you will create a .tbi file). 
 
@@ -507,196 +507,57 @@ Filter SNPs using GATKs `VariantFiltration` with "QD < 2.0 || MQ < 40.0 || SOR >
 
 Compute mean depth and missingness per individual on a whole-genome scale using VCFtools. Filter out all individuals with less than 2x mean coverage, and then filter out <u>all sites</u> that have any missing genotypes. Result is VCF called `allChr_fullGeno.recode.vcf`
 
-Next step is to filter for only biallelic sites (no indels) with a MAF of > 0.05. This is a very conservative approach - only biallelic, common SNPs that were called across all individuals in the analysis. Even though it is conservative, it ensures that there is a common set of high quality SNPs to compare across all sampled populations. 
+Next step is to filter for only biallelic sites (no indels) with a MAF (minor allele frequency) of > 0.05. This is a very conservative approach - only biallelic, common SNPs that were called across all individuals in the analysis. Even though it is conservative, it ensures that there is a common set of high quality SNPs to compare across all sampled populations. 
 
-## Calculating Theta with a Bootstrap Analysis
+#### Annotating Variants
 
-I will use a cyvcf2/python script `vcf_to_mat.py`to make a custom matrix of genotypes (47k sites x 246 flies). [Follow these instructions for getting bioconda](https://bioconda.github.io/user/install.html#install-conda). This `genotype_matrix_all.table` will then be used for estimating number of segregating sites using bootstrapping of individuals and heterozygous sites. 
+See the "SnpEff Usage" [markdown file](https://github.com/jamilla-az/variant-calling-pipeline/blob/master/SnpEff%20Usage.md) for directions on how to use SnpEff to annotate variants. 
 
-`python ~/Seq-Data/variant_processing/vcf_to_mat.py 46988 allChr_fullGeno.recode.vcf all`
+## Calculating Theta with a Bootstrap Approach
 
-I will use a cyvcf2/python script in a job submission to calculate 100 bootstrap estimates of segregating sites for each population with some subsampling. Let's start with the heritability flies. 
+Cyvcf2/python script `vcf_to_mat.py` makes a custom matrix of genotypes (SNPs x FlyID). [Follow these instructions for getting bioconda](https://bioconda.github.io/user/install.html#install-conda). This `genotype_matrix_all.table` will then be used for estimating number of segregating sites using bootstrapping of individuals and heterozygous sites. 
+
+`python ~/Seq-Data/variant_processing/vcf_to_mat.py [#SNPs] allChr_fullGeno.recode.vcf all`
+
+The cyvcf2/python script, `bootstrap_indvs.py`, generates 100 bootstrap estimates of the number of segregating sites for each population, while subsampling the number of strains/number of individuals per strain to match the population with the fewest strains/individuals. Let's start with the heritability flies. 
+
+`calcSegSites.sbatch` does a batch submission of `bootstrap_indvs.py` for each population (e.g. all populations used in the heritability experiment)
 
 ```
 POP_FILES=($(ls -1 /n/scratchlfs/debivort_lab/Jamilla/05_vcf/sample_names/herit_pops))
 NUMFILES=${#POP_FILES[@]}
 ZBNUMFILES=$(($NUMFILES - 1))
 sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
-sacct -j 29600106 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
 ```
 
-Now, variability flies:
-
-```
-POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/var_pops))
-NUMFILES=${#POP_FILES[@]}
-ZBNUMFILES=$(($NUMFILES - 1))
-sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
-sacct -j 32667850 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
-```
-
-Variability flies - segregating sites per line:
+`count_seg_sites.py` takes only strains from a particular population with 4 sequenced individuals and counts up the number of segregating sites per strain (used for populations in variability experiment). `calcSegSites_noBoot.sbatch` does the batch job submission. 
 
 ```
 POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/var_pops))
 NUMFILES=${#POP_FILES[@]}
 ZBNUMFILES=$(($NUMFILES - 1))
 sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites_noBoot.sbatch
-sacct -j 32691186 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
 ```
 
+Watterson's theta was calculated as:
+$$
+\Theta_s = \dfrac{S}{\sum_{i=1}^{n}\frac{1}{i}}
+$$
+Where *S* is the number of segregating sites, and *n* is the number of individuals genotyped at each site (see [here for implementation](https://github.com/jamilla-az/bet-hedging-project#genetic-diversity-analysis)). 
+
+## Estimating Theta using PoPOOLation
+
+[PoPOOLation software](https://sourceforge.net/p/popoolation/wiki/PoPOOLationWalkthrough/) uses pileup files generated from combining BAM files in order to identify segregating sites and calculate population genetics. Unlike the above analysis, it does not require that genotypes are called on each individual. 
+
+To prepare the BAM files to generate a pileup file, BAM file depth should be downsampled to match the BAM file with the lowest read count. This is done in order to control for allele bias that might be introduced by highly sequenced individuals (often biased to the reference allele, as reads similar to the reference map better). Prior to downsampling, BAMs read count should be thresholded to some chosen acceptable level (e.g. 2x coverage) - BAMs with read counts lower than the threshold are excluded from further analysis. 
+
+`downsample_bams.sh` downsamples list of provided BAMs to a chosen minimum read count (taken from the BAM file chosen to represent the lowest acceptable read count). 
+
+`sort_sampled_bams.sh` re-does sorting and indexing on the downsampled BAMs using Picard tools. 
+
+Next, BAMs must be merged into a BAM file representing the "population". Since the experimental populations consist of variable numbers of strains, you have to randomly downsample the number of strains represented in the BAM list for a particular population (`make_bam_lists.sh`) to match the population with the fewest strains (`sample_uniq_lines.py`). After that, you can merge the BAMs into a population BAM (`merge_pop_bams.sh`). 
+
+Now, the pileup file for a particular population can be made and theta calculated using a sliding window with the PoPOOLation software (`make_pileup.sh`). Prior to calculating theta, it is important to filter out SNPs next to indels, as they are often false positives and not real SNPs. You can specify a [variety of options](https://sourceforge.net/p/popoolation/code/HEAD/tree/trunk/Variance-sliding.pl#l585) (minimum coverage, maximum coverage, minimum allele count, quality, etc.) for the PoPOOLation software to use in filtering sites. **Output is a tab-delimited table** with 1) chromosome, 2) position in chromosome, 3) number of SNPs in sliding window, 4) fraction of window covered by sufficient number of reads, 5) estimator (theta). 
 
 
-##### Annotate the VCF file:
-
-I created a new database with genome annotations using the r6.28 genome release from FlyBase - I used the .fasta files and .gtf files and the following [guide](http://snpeff.sourceforge.net/SnpEff_manual.html#databases). The other database (most recent one I could find from the available ones) was r6.12 from 2016. 
-
-<u>Running SnpEff:</u>
-
-You have to run from the snpEff folder...and VCFs need an INFO field which to annotate (--recode-INFO-all to keep original INFO field when making a new filtered VCF with vcftools). 
-
-`DIR_PATH='/n/debivort_lab/Jamilla_seq/final_vcfs'`
-
-Annotate all 2L variants (filtered for quality only):
-
-```
-java -jar snpEff.jar -v dmel_r6.28 $DIR_PATH/wildFlies_2L_filtered.vcf.gz > wildFlies_2L.ann.vcf
-```
-
-Annotate just the good-quality SNPs called for all individuals (47k SNPs):
-
-```
-java -jar snpEff.jar -v dmel_r6.28 $DIR_PATH/allChr_fullGeno.recode.vcf > allChr_fullGeno.recode.ann.vcf
-```
-
-Note about variant counts in snpEff_summary.html: https://github.com/pcingola/SnpEff/wiki/Number-of-variants-in-VCF-and-HTML-summary-do-not-match
-
-<u>Filter using SnpSift:</u>
-
-Filter for just variants with warnings:
-
-```
-java -jar SnpSift.jar filter "(ANN[*].ERRORS =~ 'WARNING') || (ANN[*].ERRORS =~ 'INFO')" allChr_fullGeno.recode.ann.vcf > warning_snps.vcf
-
-grep -v '#' warning_snps.vcf | wc -l #count SNPs retained
->2271
-
-grep -v '#' warning_snps.vcf | grep -E 'WARNING|INFO|ERROR' | wc -l #any warnings remain?
->2271
-```
-
-SNPs that hit a gene:
-
-```
-java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'intron_variant') || (ANN[*].EFFECT has 'synonymous_variant') || (ANN[*].EFFECT has '5_UTR_variant') || (ANN[*].EFFECT has '3_UTR_variant')" allChr_fullGeno.recode.ann.vcf > genic_snps.vcf
-
-grep -v '#' genic_snps.vcf | wc -l #count SNPs retained
->37329
-```
-
-SNPs that hit an exon (coding):
-
-```
-java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'synonymous_variant')" allChr_fullGeno.recode.ann.vcf > exonic_snps.vcf
-
-grep -v '#' exonic_snps.vcf | wc -l #count SNPs retained
->25577
-```
-
-Missense only SNPs:
-
-```
-java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant')" allChr_fullGeno.recode.ann.vcf > missense_snps.vcf
-
-grep -v '#' missense_snps.vcf | wc -l #count SNPs retained
->11221
-```
-
-Filter for just variants with NO warnings:
-
-```
-java -jar SnpSift.jar filter -n "(ANN[*].ERRORS =~ 'WARNING') || (ANN[*].ERRORS =~ 'INFO')" allChr_fullGeno.recode.ann.vcf > anno_PASS_snps.vcf
-
-grep -v '#' anno_PASS_snps.vcf | wc -l #count SNPs retained
->44717
-
-grep -v '#' anno_PASS_snps.vcf | grep -E 'WARNING|INFO|ERROR' | wc -l #any warnings remain?
->0
-```
-
-SNPs that hit a gene (no warnings):
-
-```
-java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'intron_variant') || (ANN[*].EFFECT has 'synonymous_variant') || (ANN[*].EFFECT has '5_UTR_variant') || (ANN[*].EFFECT has '3_UTR_variant')" anno_PASS_snps.vcf > genic_PASS_snps.vcf
-
-grep -v '#' genic_PASS_snps.vcf | wc -l #count SNPs retained
->35904
-```
-
-SNPs that hit an exon (coding; no warnings):
-
-```
-java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant') || (ANN[*].EFFECT has 'synonymous_variant')" anno_PASS_snps.vcf > exonic_PASS_snps.vcf
-
-grep -v '#' exonic_PASS_snps.vcf | wc -l #count SNPs retained
->24683
-```
-
-Missense only SNPs (no warnings):
-
-```
-java -jar SnpSift.jar filter "(ANN[*].EFFECT has 'missense_variant')" anno_PASS_snps.vcf > missense_PASS_snps.vcf
-
-grep -v '#' missense_PASS_snps.vcf | wc -l #count SNPs retained
->10809
-```
-
-##### Bootstrapping with different SNP types:
-
-```
-cd /n/debivort_lab/Jamilla_seq/final_vcfs
-module load Anaconda3/5.0.1-fasrc02
-source activate py_env
-
-#genic snps
-NUM_SNPS=$(grep -v '#' genic_PASS_snps.vcf | wc -l)
-python ~/Seq-Data/variant_processing/vcf_to_mat.py $NUM_SNPS genic_PASS_snps.vcf genic
-
-#exonic snps
-NUM_SNPS=$(grep -v '#' exonic_PASS_snps.vcf | wc -l)
-python ~/Seq-Data/variant_processing/vcf_to_mat.py $NUM_SNPS exonic_PASS_snps.vcf exon
-
-#nonsyn snps
-NUM_SNPS=$(grep -v '#' missense_PASS_snps.vcf | wc -l)
-python ~/Seq-Data/variant_processing/vcf_to_mat.py $NUM_SNPS missense_PASS_snps.vcf nonsyn
-```
-
-```
-cd /n/scratchlfs/debivort_lab/Jamilla/05_vcf
-
-#genic snps bootstrap
-POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/herit_pops))
-NUMFILES=${#POP_FILES[@]}
-ZBNUMFILES=$(($NUMFILES - 1))
-sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
-sacct -j 31672677 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
-```
-
-```
-#exonic snps bootstrap
-POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/herit_pops))
-NUMFILES=${#POP_FILES[@]}
-ZBNUMFILES=$(($NUMFILES - 1))
-sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
-sacct -j 31683926 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
-```
-
-```
-#nonsyn snps bootstrap
-POP_FILES=($(ls -1 /n/debivort_lab/Jamilla_seq/final_vcfs/sample_names/herit_pops))
-NUMFILES=${#POP_FILES[@]}
-ZBNUMFILES=$(($NUMFILES - 1))
-sbatch --array=0-$ZBNUMFILES ~/Seq-Data/variant_processing/calcSegSites.sbatch
-sacct -j 31690884 --format JobID,Elapsed,ReqMem,MaxRSS,AllocCPUs,TotalCPU,State
-```
 
