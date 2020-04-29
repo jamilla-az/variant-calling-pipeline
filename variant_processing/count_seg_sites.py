@@ -79,10 +79,10 @@ def main():
             print(
                 f'Skipping...line {line} has < 4 ({len(inds_list)}) individuals')
     print(
-        f'saving list as output_files/count_{args.output_label}_segsites_{args.var_type}.table')
+        f'saving list as /n/debivort_lab/Jamilla_seq/final_vcfs/output_files/count_{args.output_label}_segsites_{args.var_type}.table')
 
     pd.DataFrame({'loc': [args.output_label]*len(seg_sites), 'lines': lines_used, 'seg_sites': seg_sites}).to_csv(
-        f'output_files/count_{args.output_label}_segsites_{args.var_type}.table', sep='\t', index=False)
+        f'/n/debivort_lab/Jamilla_seq/final_vcfs/output_files/count_{args.output_label}_segsites_{args.var_type}.table', sep='\t', index=False)
 
 
 if __name__ == '__main__':
