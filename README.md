@@ -2,7 +2,7 @@
 
 #### Scripts for BWA-MEM, picard, GATK, vcftools to use with whole-genome variant calling
 
-Explicit details of the whole process can be found in NovaSeq Analysis Pipeline.md
+Explicit details of the whole process can be found in [NovaSeq Analysis Pipeline.md](https://github.com/jamilla-az/variant-calling-pipeline/blob/master/NovaSeq%20Analysis%20Pipeline.md)
 
 **alignment** contains the scripts for aligning the FASTQ files to the reference genome and processing the BAM files using BWA-MEM and picard tools. 
 
