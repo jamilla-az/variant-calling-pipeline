@@ -4,3 +4,5 @@
 03_testGvcfs/*
 .vscode/*
 variant_processing/.vscode/*
+sample_scripts/sample_HaplotypeCaller.sh
+images/*
