@@ -2,7 +2,12 @@
 
 ###### created by Jamilla Akhund-Zade
 
-[TOC]
+1. [Downloading Sequencing Data](https://github.com/jamilla-az/variant-calling-pipeline/blob/master/NovaSeq%20Analysis%20Pipeline.md#downloading-sequencing-data)
+2. [Read Alignment](https://github.com/jamilla-az/variant-calling-pipeline/blob/master/NovaSeq%20Analysis%20Pipeline.md#read-alignment)
+3. [Variant Calling](https://github.com/jamilla-az/variant-calling-pipeline/blob/master/NovaSeq%20Analysis%20Pipeline.md#variant-calling)
+4. [Filtering Variants](https://github.com/jamilla-az/variant-calling-pipeline/blob/master/NovaSeq%20Analysis%20Pipeline.md#filtering-variants)
+5. [Calculating Theta with a Bootstrap Approach](https://github.com/jamilla-az/variant-calling-pipeline/blob/master/NovaSeq%20Analysis%20Pipeline.md#calculating-theta-with-a-bootstrap-approach)
+6. [Estimating Theta using PoPOOLation](https://github.com/jamilla-az/variant-calling-pipeline/blob/master/NovaSeq%20Analysis%20Pipeline.md#estimating-theta-using-popoolation)
 
 ## Downloading Sequencing Data
 
